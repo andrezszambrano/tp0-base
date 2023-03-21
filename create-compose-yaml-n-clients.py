@@ -14,7 +14,12 @@ services:
       - PYTHONUNBUFFERED=1
       - LOGGING_LEVEL=DEBUG
     networks:
-      - testing_net''')
+      - testing_net
+    volumes:  
+      - type: volume
+        source: server-config
+        target: /config
+        read_only: true''')
 
 f.write("\n")
 
@@ -34,6 +39,10 @@ for i in range(1, number_of_clients + 1):
     f.write("\n")
 
 f.write('''
+volumes:
+  server-config:
+    external: true
+
 networks:
   testing_net:
     ipam:

@@ -10,6 +10,11 @@ services:
       - LOGGING_LEVEL=DEBUG
     networks:
       - testing_net
+    volumes:  
+      - type: volume
+        source: server-config
+        target: /config
+        read_only: true
 
   client1:
     container_name: client1
@@ -34,6 +39,10 @@ services:
       - testing_net
     depends_on:
       - server
+
+volumes:
+  server-config:
+    external: true
 
 networks:
   testing_net:

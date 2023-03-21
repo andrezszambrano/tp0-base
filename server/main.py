@@ -30,7 +30,7 @@ def initialize_config():
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
         raise ValueError("Key could not be parsed. Error: {}. Aborting server".format(e))
-    print(config_params["listen_backlog"])
+
     return config_params
 
 
