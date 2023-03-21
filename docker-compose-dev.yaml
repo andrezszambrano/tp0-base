@@ -25,6 +25,11 @@ services:
       - CLI_LOG_LEVEL=DEBUG
     networks:
       - testing_net
+    volumes:  
+      - type: volume
+        source: client-config
+        target: /config
+        read_only: true  
     depends_on:
       - server
 
@@ -37,11 +42,18 @@ services:
       - CLI_LOG_LEVEL=DEBUG
     networks:
       - testing_net
+    volumes:  
+      - type: volume
+        source: client-config
+        target: /config
+        read_only: true  
     depends_on:
       - server
 
 volumes:
   server-config:
+    external: true
+  client-config:
     external: true
 
 networks:

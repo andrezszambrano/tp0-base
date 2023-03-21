@@ -34,6 +34,11 @@ for i in range(1, number_of_clients + 1):
       - CLI_LOG_LEVEL=DEBUG
     networks:
       - testing_net
+    volumes:  
+      - type: volume
+        source: client-config
+        target: /config
+        read_only: true  
     depends_on:
       - server'''.format(i, i, i))
     f.write("\n")
@@ -41,6 +46,8 @@ for i in range(1, number_of_clients + 1):
 f.write('''
 volumes:
   server-config:
+    external: true
+  client-config:
     external: true
 
 networks:
