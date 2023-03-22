@@ -19,7 +19,16 @@ services:
       - type: volume
         source: server-config
         target: /config
-        read_only: true''')
+        read_only: true
+
+  server-test:
+    container_name: server-test
+    image: server-test:latest
+    entrypoint: /server-test.sh
+    networks:
+      - testing_net
+    depends_on:
+      - server''')
 
 f.write("\n")
 
