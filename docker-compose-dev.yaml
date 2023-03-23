@@ -24,6 +24,8 @@ services:
       - testing_net
     depends_on:
       - server
+    profiles:
+      - tests 
 
   client1:
     container_name: client1

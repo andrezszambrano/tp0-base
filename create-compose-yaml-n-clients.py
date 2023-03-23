@@ -28,7 +28,9 @@ services:
     networks:
       - testing_net
     depends_on:
-      - server''')
+      - server
+    profiles:
+      - tests ''')
 
 f.write("\n")
 

@@ -32,8 +32,8 @@ docker-compose-up: docker-image
 .PHONY: docker-compose-up
 
 
-docker-compose-test:
-	docker compose -f docker-compose-dev.yaml up -d --build server-test
+docker-compose-test: docker-image
+	docker compose -f docker-compose-dev.yaml run server-test
 .PHONY: docker-compose-up
 
 docker-compose-down:
