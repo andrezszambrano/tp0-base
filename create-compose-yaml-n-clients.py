@@ -39,7 +39,7 @@ for i in range(1, number_of_clients + 1):
   client{}:
     container_name: client{}
     image: client:latest
-    entrypoint: /client
+    entrypoint: python3 /main.py
     environment:
       - CLI_ID={}
       - CLI_LOG_LEVEL=DEBUG
