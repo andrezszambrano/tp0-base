@@ -14,8 +14,8 @@ class Client:
         self._loop_period = loop_period
 
     def handler(self, signum, frame):
-        print("Forever is over!")
-        raise Exception("end of time")
+        logging.info(f"action: timeout_detected | result: success | client_id: {self._id}")
+        sys.exit(0)
 
     def run(self):
         signal.signal(signal.SIGALRM, self.handler)
@@ -23,7 +23,6 @@ class Client:
 
         msg_id = 1
         while True:
-            logging.debug(f"MSG { msg_id }")
             self.connect_and_message_server(msg_id)
             msg_id = msg_id + 1
             time.sleep(self._loop_period)
@@ -31,11 +30,16 @@ class Client:
     def connect_and_message_server(self, msg_id):
         try:
             client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_socket.connect((self._host, self._port))
+            client_socket.connect((self._host, self._port + 23))
+            self.send_message_to_server(client_socket, msg_id)
+            client_socket.close()
+        except OSError as e:
+            logging.error(f"action: connect | result: fail | client_id: {self._id} | error: {e}")
+
+    def send_message_to_server(self, client_socket, msg_id):
+        try:
             client_socket.send("[CLIENT {}] Message N°{}".format(self._id, msg_id).encode('utf-8'))
             msg = client_socket.recv(1024).rstrip().decode('utf-8')
             logging.info(f"action: receive_message | result: success | client_id: {self._id} | msg: {msg}")
         except OSError as e:
-            logging.error("action: receive_message | result: fail | error: {e}")
-        finally:
-            client_socket.close()
+            logging.error(f"action: receive_message | result: fail | client_id: {self._id} | error: {e}")
