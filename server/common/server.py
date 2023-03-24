@@ -9,12 +9,16 @@ class Server:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
+        self.self._client_sock = None
+        signal.signal(signal.SIGTERM, __exit_gracefully)
 
-    def exit_gracefully(self, *args):
+    def __exit_gracefully(self, signum, frame):
+        self._server_socket.shutdown(socket.SHUT_RDWR)
         self._server_socket.close()
         logging.info(f'action: server socket closed | result: success')
-        if client_sock != None:
-            client_sock.close()
+        if self._client_sock != None:
+            self._client_sock.shutdown(socket.SHUT_RDWR)
+            self._client_sock.close()
             logging.info(f'action: client socket closed | result: success')
 
         logging.info(f'action: server shutdowned | result: success')
@@ -29,16 +33,14 @@ class Server:
         finishes, servers starts to accept new connections again
         """
 
-        # TODO: Modify this program to handle signal to graceful shutdown
+        # Modify this program to handle signal to graceful shutdown
         # the server
-        client_sock = None
-        signal.signal(signal.SIGTERM, self.exit_gracefully) 
-
+        
         while True:
-            client_sock = self.__accept_new_connection()
-            self.__handle_client_connection(client_sock)
+            self._client_sock = self.__accept_new_connection()
+            self.__handle_client_connection()
 
-    def __handle_client_connection(self, client_sock):
+    def __handle_client_connection(self):
         """
         Read message from a specific client socket and closes the socket
 
@@ -47,15 +49,17 @@ class Server:
         """
         try:
             # TODO: Modify the receive to avoid short-reads
-            msg = client_sock.recv(1024).rstrip().decode('utf-8')
-            addr = client_sock.getpeername()
+            msg = self._client_sock.recv(1024).rstrip().decode('utf-8')
+            addr = self._client_sock.getpeername()
             logging.info(f'action: receive_message | result: success | ip: {addr[0]} | msg: {msg}')
             # TODO: Modify the send to avoid short-writes
-            client_sock.send("{}\n".format(msg).encode('utf-8'))
+            self._client_sock.send("{}\n".format(msg).encode('utf-8'))
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
         finally:
-            client_sock.close()
+            self._client_sock.shutdown(socket.SHUT_RDWR)
+            self._client_sock.close()
+            self._client_sock = None
 
     def __accept_new_connection(self):
         """
