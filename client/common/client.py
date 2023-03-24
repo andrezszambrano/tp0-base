@@ -13,14 +13,14 @@ class Client:
         self._loop_lapse = loop_lapse
         self._loop_period = loop_period
         self._client_socket = None
-        signal.signal(signal.SIGTERM, __exit_gracefully)
+        signal.signal(signal.SIGTERM, self.__exit_gracefully)
 
     def __exit_gracefully(self, signum, frame):
-        if self._client_sock != None:
-            self._client_sock.shutdown(socket.SHUT_RDWR)
-            self._client_sock.close()
+        if self._client_socket != None:
+            self._client_socket.shutdown(socket.SHUT_RDWR)
+            self._client_socket.close()
             logging.info(f'action: client socket closed | result: success')
-        logging.info(f'action: client shutdowned | result: success')
+        logging.info(f'action: sigterm detected, client shutdowned | result: success')
         sys.exit(0)
 
     def __timeout_handler(self, signum, frame):
@@ -40,10 +40,10 @@ class Client:
     def __connect_and_message_server(self, msg_id):
         try:
             self._client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._client_socket.connect((self._host, self._port + 23))
+            self._client_socket.connect((self._host, self._port))
             self.__send_message_to_server(msg_id)
 
-            self._client_sock.shutdown(socket.SHUT_RDWR)
+            self._client_socket.shutdown(socket.SHUT_RDWR)
             self._client_socket.close()
             self._client_socket = None
         except OSError as e:

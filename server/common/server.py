@@ -9,8 +9,8 @@ class Server:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.bind(('', port))
         self._server_socket.listen(listen_backlog)
-        self.self._client_sock = None
-        signal.signal(signal.SIGTERM, __exit_gracefully)
+        self._client_sock = None
+        signal.signal(signal.SIGTERM, self.__exit_gracefully)
 
     def __exit_gracefully(self, signum, frame):
         self._server_socket.shutdown(socket.SHUT_RDWR)
@@ -21,7 +21,7 @@ class Server:
             self._client_sock.close()
             logging.info(f'action: client socket closed | result: success')
 
-        logging.info(f'action: server shutdowned | result: success')
+        logging.info(f'action: sigterm detected, server shutdowned | result: success')
         sys.exit(0)
 
     def run(self):
