@@ -44,23 +44,6 @@ services:
     depends_on:
       - server
 
-  client2:
-    container_name: client2
-    image: client:latest
-    entrypoint: python3 /main.py
-    environment:
-      - CLI_ID=2
-      - CLI_LOG_LEVEL=DEBUG
-    networks:
-      - testing_net
-    volumes:  
-      - type: volume
-        source: client-config
-        target: /config
-        read_only: true  
-    depends_on:
-      - server
-
 volumes:
   server-config:
     external: true

@@ -25,9 +25,8 @@ class Client:
         sys.exit(0)
 
     def __timeout_handler(self, signum, frame):
-        if self._client_socket != None:
-            self._client_socket.shutdown(socket.SHUT_RDWR)
-            self._client_socket.close()
+        if self._socket != None:
+            self._socket.shutdown_and_close()
         logging.info(f"action: timeout_detected | result: success | client_id: {self._id}")
         sys.exit(0)
 
