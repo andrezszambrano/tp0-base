@@ -1,8 +1,9 @@
+import datetime
 import logging
 import signal
 import sys
 import time
-from .protocol import ClientProtocol
+from .client_protocol import ClientProtocol
 from .socket import Socket
 
 
@@ -33,20 +34,17 @@ class Client:
     def run(self):
         signal.signal(signal.SIGALRM, self.__timeout_handler)
         signal.alarm(self._loop_lapse)
+        self.__connect_and_message_server()
 
-        msg_id = 1
-        while True:
-            self.__connect_and_message_server(msg_id)
-            msg_id = msg_id + 1
-            time.sleep(self._loop_period)
-
-    def __connect_and_message_server(self, msg_id):
+    def __connect_and_message_server(self):
         try:
             self._socket = Socket(self._host, self._port)
             protocol = ClientProtocol()
-            self.__send_message_to_server(protocol, msg_id)
+            protocol.send_bet(self._socket, "Andres", "Zambrano", 30904465, datetime.datetime.now(), 12345)
+            protocol.recv_ok(self._socket)
+            logging.info("action: apuesta_enviada | result: success | dni: $30904465 | numero: $12345")
             self._socket.shutdown_and_close()
-            self._client_socket = None
+            self._socket = None
         except OSError as e:
             logging.error(f"action: connect | result: fail | client_id: {self._id} | error: {e}")
 

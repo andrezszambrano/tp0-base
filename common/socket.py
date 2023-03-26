@@ -1,21 +1,27 @@
-import logging
 import socket
 
 
 class Socket:
 
-    def __init__(self, host, port):
-        _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        _socket.connect((host, port))
+    def __init__(self, host, port, created_socket = None):
+        _socket = None
+        if created_socket != None:
+            print(created_socket)
+            _socket = created_socket
+        else:
+            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _socket.connect((host, port))
         self._socket = _socket
-        self._closed = False
+
+    def getpeername(self):
+        return self._socket.getpeername()
+
+    def get_addr(self):
+        return self._socket.getsockname()[0]
 
     def shutdown_and_close(self):
-        if self._closed:
-            return
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()
-        self._closed = True
 
     def send(self, buffer, length):
         sent = 0
