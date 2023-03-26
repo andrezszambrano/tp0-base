@@ -1,11 +1,18 @@
+import datetime
 
 
+""" A lottery bet registry. """
 class Bet:
-
-    def __init__(self, better_name, better_last_name,
-                 better_id, better_birth_date, bet_number):
-        self.better_name = better_name
-        self.better_last_name = better_last_name
-        self.better_id = better_id
-        self.better_birth_date = better_birth_date
-        self.bet_number = bet_number
+    def __init__(self, agency: int, first_name: str, last_name: str, document: int,
+                 birthdate: datetime.date, number: int):
+        """
+        agency must be passed with integer format.
+        birthdate must be passed with format: 'YYYY-MM-DD'.
+        number must be passed with integer format.
+        """
+        self.agency = agency
+        self.first_name = first_name
+        self.last_name = last_name
+        self.document = document
+        self.birthdate = birthdate
+        self.number = number

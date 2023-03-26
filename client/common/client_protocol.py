@@ -8,11 +8,12 @@ class ClientProtocol(Protocol):
 
     def send_bet(self, socket, bet):
         super()._send_byte(socket, super().BET_CHAR)
-        super()._send_string(socket, bet.better_name)
-        super()._send_string(socket, bet.better_last_name)
-        super()._send_n_byte_number(socket, super().FOUR_BYTES, bet.better_id)
-        super()._send_date(socket, bet.better_birth_date)
-        super()._send_n_byte_number(socket, super().FOUR_BYTES, bet.bet_number)
+        super()._send_n_byte_number(socket, super().ONE_BYTE, bet.agency)
+        super()._send_string(socket, bet.first_name)
+        super()._send_string(socket, bet.last_name)
+        super()._send_n_byte_number(socket, super().FOUR_BYTES, bet.document)
+        super()._send_date(socket, bet.birthdate)
+        super()._send_n_byte_number(socket, super().FOUR_BYTES, bet.number)
 
     def recv_ok(self, socket):
         super()._recv_byte(socket)

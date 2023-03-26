@@ -66,7 +66,7 @@ def main():
                   f"server_address: {server_address} | loop_lapse: {lapse} | "
                   f"loop_period: {period} | log_level: {logging_level}")
 
-    bet = Bet(config_params["name"], config_params["last_name"], config_params["better_id"],
+    bet = Bet(id, config_params["name"], config_params["last_name"], config_params["better_id"],
               config_params["birth_date"], config_params["bet_number"])
 
     # Initialize server and start server loop
