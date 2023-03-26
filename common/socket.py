@@ -15,9 +15,6 @@ class Socket:
     def getpeername(self):
         return self._socket.getpeername()
 
-    def get_addr(self):
-        return self._socket.getsockname()[0]
-
     def shutdown_and_close(self):
         self._socket.shutdown(socket.SHUT_RDWR)
         self._socket.close()

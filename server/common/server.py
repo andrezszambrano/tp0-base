@@ -6,6 +6,7 @@ import signal
 import sys
 
 from .server_protocol import ServerProtocol
+from .utils import store_bets
 
 
 class Server:
@@ -51,6 +52,7 @@ class Server:
         try:
             protocol = ServerProtocol()
             bet = protocol.recv_bet(self._client_sock)
+            store_bets([bet])
             #addr = self._client_sock.getpeername()
             logging.info(f"action: apuesta_almacenada | result: success | dni: ${bet.document} | numero: ${bet.number}")
             protocol.send_ok(self._client_sock)
@@ -71,6 +73,5 @@ class Server:
         # Connection arrived
         logging.info('action: accept_connections | result: in_progress')
         c = self._acceptor_socket.accept()
-        #TODO verify if accept returns a peer socket addr or acceptor addr
-        logging.info(f'action: accept_connections | result: success | ip: {c.get_addr()}')
+        logging.info(f'action: accept_connections | result: success | ip: {c.getpeername()[0]}')
         return c
