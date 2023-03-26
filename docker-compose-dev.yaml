@@ -34,18 +34,18 @@ services:
     environment:
       - CLI_ID=1
       - CLI_LOG_LEVEL=DEBUG
-      - NAME="Andres"
-      - LAST_NAME="Zambrano"
-      - BETTER_ID=30904465
-      - BIRTH_DATE="1999-03-17"
-      - BET_NUMBER=12345
+      - BETS_FILE_PATH=data/agency-1.csv
     networks:
       - testing_net
     volumes:  
       - type: volume
         source: client-config
         target: /config
-        read_only: true  
+        read_only: true
+      - type: volume 
+        source: dataset
+        target: /data
+        read_only: true
     depends_on:
       - server
 
@@ -53,6 +53,8 @@ volumes:
   server-config:
     external: true
   client-config:
+    external: true
+  dataset:
     external: true
 
 networks:

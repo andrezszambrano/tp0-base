@@ -31,10 +31,11 @@ class Client:
         logging.info(f"action: timeout_detected | result: success | client_id: {self._id}")
         sys.exit(0)
 
-    def run(self, bet):
+    def run(self, bets):
         signal.signal(signal.SIGALRM, self.__timeout_handler)
         signal.alarm(self._loop_lapse)
-        self.__connect_and_send_bet_to_server(bet)
+        for bet in bets:
+            self.__connect_and_send_bet_to_server(bet)
 
     def __connect_and_send_bet_to_server(self, bet):
         try:

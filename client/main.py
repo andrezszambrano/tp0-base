@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 import datetime
 from configparser import ConfigParser
+
+from common.bets_file import BetsFile
 from common.client import Client
 from common.bet import Bet
 import logging
 import os
 
+BETS_FILEPATH = "data/bets.csv"
 
 def convert_time_to_seconds(time_str):
     time_str = time_str.strip('"')
@@ -36,13 +39,7 @@ def initialize_config():
         config_params["logging_level"] = os.getenv('LOGGING_LEVEL', config["DEFAULT"]["LOGGING_LEVEL"])
         config_params["lapse"] = convert_time_to_seconds(os.getenv('LAPSE', config["DEFAULT"]["LAPSE"]))
         config_params["period"] = convert_time_to_seconds(os.getenv('PERIOD', config["DEFAULT"]["PERIOD"]))
-        config_params["name"] = os.getenv('NAME', config["DEFAULT"]["NAME"])
-        config_params["last_name"] = os.getenv('LAST_NAME', config["DEFAULT"]["LAST_NAME"])
-        config_params["better_id"] = int(os.getenv('BETTER_ID', config["DEFAULT"]["BETTER_ID"]))
-        date_str = os.getenv('BIRTH_DATE', config["DEFAULT"]["BIRTH_DATE"]).strip('"')
-        config_params["birth_date"] = datetime.datetime.strptime(date_str, "%Y-%m-%d")
-        config_params["bet_number"] = int(os.getenv('BET_NUMBER', config["DEFAULT"]["BET_NUMBER"]))
-
+        config_params["bets_file_path"] = os.getenv('BETS_FILE_PATH', config["DEFAULT"]["BETS_FILE_PATH"])
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -66,12 +63,14 @@ def main():
                   f"server_address: {server_address} | loop_lapse: {lapse} | "
                   f"loop_period: {period} | log_level: {logging_level}")
 
-    bet = Bet(id, config_params["name"], config_params["last_name"], config_params["better_id"],
-              config_params["birth_date"], config_params["bet_number"])
+    bets = BetsFile().get_bets(id, config_params["bets_file_path"])
+    print(bets)
+#    Bet(id, config_params["name"], config_params["last_name"], config_params["better_id"],
+ #             config_params["birth_date"], config_params["bet_number"])
 
     # Initialize server and start server loop
     client = Client(id, server_address, lapse, period)
-    client.run(bet)
+    client.run(bets)
 
 def initialize_log(logging_level):
     """
