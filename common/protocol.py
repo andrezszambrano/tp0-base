@@ -23,7 +23,7 @@ class Protocol:
         socket.send(BEnumber, n)
 
     def _send_date(self, socket, date):
-        date_bytes = date.strftime("%Y-%m-%d %H:%M:%S").encode('utf-8')
+        date_bytes = date.strftime("%Y-%m-%d").encode('utf-8')
         self._send_n_byte_number(socket, 1, len(date_bytes))
         socket.send(date_bytes, len(date_bytes))
 
@@ -40,4 +40,4 @@ class Protocol:
     def _recv_date(self, socket):
         date_len = self._recv_n_byte_number(socket, self.ONE_BYTE)
         date_str = socket.recv(date_len).decode('utf-8')
-        return datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.strptime(date_str, "%Y-%m-%d")

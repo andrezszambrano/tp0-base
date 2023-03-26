@@ -1,5 +1,6 @@
 from .socket import Socket
 from .acceptor_socket import AcceptorSocket
+from .bet import Bet
 import logging
 import signal
 import sys
@@ -49,9 +50,9 @@ class Server:
         """
         try:
             protocol = ServerProtocol()
-            protocol.recv_bet(self._client_sock)
-            addr = self._client_sock.getpeername()
-            logging.info(f'action: receive_message | result: success | ip: {addr[0]} ')
+            bet = protocol.recv_bet(self._client_sock)
+            #addr = self._client_sock.getpeername()
+            logging.info(f"action: apuesta_almacenada | result: success | dni: ${bet.better_id} | numero: ${bet.bet_number}")
             protocol.send_ok(self._client_sock)
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")

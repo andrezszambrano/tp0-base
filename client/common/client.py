@@ -31,16 +31,16 @@ class Client:
         logging.info(f"action: timeout_detected | result: success | client_id: {self._id}")
         sys.exit(0)
 
-    def run(self):
+    def run(self, bet):
         signal.signal(signal.SIGALRM, self.__timeout_handler)
         signal.alarm(self._loop_lapse)
-        self.__connect_and_message_server()
+        self.__connect_and_send_bet_to_server(bet)
 
-    def __connect_and_message_server(self):
+    def __connect_and_send_bet_to_server(self, bet):
         try:
             self._socket = Socket(self._host, self._port)
             protocol = ClientProtocol()
-            protocol.send_bet(self._socket, "Andres", "Zambrano", 30904465, datetime.datetime.now(), 12345)
+            protocol.send_bet(self._socket, bet)#"Andres", "Zambrano", 30904465, datetime.datetime.now(), 12345)
             protocol.recv_ok(self._socket)
             logging.info("action: apuesta_enviada | result: success | dni: $30904465 | numero: $12345")
             self._socket.shutdown_and_close()

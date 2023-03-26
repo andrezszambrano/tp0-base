@@ -1,6 +1,6 @@
 import logging
 from .protocol import Protocol
-
+from .bet import Bet
 
 class ServerProtocol(Protocol):
 
@@ -14,8 +14,7 @@ class ServerProtocol(Protocol):
         id = super()._recv_n_byte_number(socket, super().FOUR_BYTES)
         birth_date = super()._recv_date(socket)
         bet_number = super()._recv_n_byte_number(socket, super().FOUR_BYTES)
-        logging.debug(f"name: {name}, last name: {last_name}, id: {id}, birth date: {birth_date}, bet number: {bet_number}")
-        return name, last_name, id, birth_date, bet_number
+        return Bet(name, last_name, id, birth_date, bet_number)
 
     def send_ok(self, socket):
         super()._send_byte(socket, super().OK_CHAR)

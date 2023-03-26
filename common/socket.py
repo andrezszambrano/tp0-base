@@ -6,7 +6,6 @@ class Socket:
     def __init__(self, host, port, created_socket = None):
         _socket = None
         if created_socket != None:
-            print(created_socket)
             _socket = created_socket
         else:
             _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -34,6 +34,11 @@ services:
     environment:
       - CLI_ID=1
       - CLI_LOG_LEVEL=DEBUG
+      - NAME="Andres"
+      - LAST_NAME="Zambrano"
+      - BETTER_ID=30904465
+      - BIRTH_DATE="1999-03-17"
+      - BET_NUMBER=12345
     networks:
       - testing_net
     volumes:  
