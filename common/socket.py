@@ -24,16 +24,13 @@ class Socket:
 
     def send(self, buffer, length):
         sent = 0
-        remainder = buffer
         while sent < length:
-            aux = self._socket.send(remainder)
-            remainder = buffer
+            aux = self._socket.send(buffer[sent:])
             sent = sent + aux
 
     def recv(self, length):
-        #received = 0
-        #msg = ''
-        #while received < length:
-        return self._socket.recv(length)
-        #msg = msg + aux
-        #return msg
+        received_data = b""
+        while len(received_data) < length:
+            data_chunk = self._socket.recv(length - len(received_data))
+            received_data = received_data + data_chunk
+        return received_data
