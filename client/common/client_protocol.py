@@ -15,5 +15,10 @@ class ClientProtocol(Protocol):
         super()._send_date(socket, bet.birthdate)
         super()._send_n_byte_number(socket, super().FOUR_BYTES, bet.number)
 
+    def send_batch(self, socket, batch):
+        for bet in batch:
+            self.send_bet(socket, bet)
+        super()._send_byte(socket, super().BATCH_SENT)
+
     def recv_ok(self, socket):
         super()._recv_byte(socket)

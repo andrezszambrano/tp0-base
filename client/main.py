@@ -40,6 +40,7 @@ def initialize_config():
         config_params["lapse"] = convert_time_to_seconds(os.getenv('LAPSE', config["DEFAULT"]["LAPSE"]))
         config_params["period"] = convert_time_to_seconds(os.getenv('PERIOD', config["DEFAULT"]["PERIOD"]))
         config_params["bets_file_path"] = os.getenv('BETS_FILE_PATH', config["DEFAULT"]["BETS_FILE_PATH"])
+        config_params["batch_size"] = int(os.getenv('BATCH_SIZE', config["DEFAULT"]["BATCH_SIZE"]))
     except KeyError as e:
         raise KeyError("Key was not found. Error: {} .Aborting server".format(e))
     except ValueError as e:
@@ -54,7 +55,7 @@ def main():
     server_address = config_params["server_address"]
     lapse = config_params["lapse"]
     period = config_params["period"]
-
+    batch_size = config_params["batch_size"]
     initialize_log(logging_level)
 
     # Log config parameters at the beginning of the program to verify the configuration
@@ -63,14 +64,10 @@ def main():
                   f"server_address: {server_address} | loop_lapse: {lapse} | "
                   f"loop_period: {period} | log_level: {logging_level}")
 
-    bets = BetsFile().get_bets(id, config_params["bets_file_path"])
-    print(bets)
-#    Bet(id, config_params["name"], config_params["last_name"], config_params["better_id"],
- #             config_params["birth_date"], config_params["bet_number"])
-
-    # Initialize server and start server loop
+    bets = list(BetsFile().get_bets(id, config_params["bets_file_path"]))
+    # Initialize client and start server loop
     client = Client(id, server_address, lapse, period)
-    client.run(bets)
+    client.run(bets, batch_size)
 
 def initialize_log(logging_level):
     """

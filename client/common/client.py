@@ -31,19 +31,20 @@ class Client:
         logging.info(f"action: timeout_detected | result: success | client_id: {self._id}")
         sys.exit(0)
 
-    def run(self, bets):
+    def run(self, bets, batch_size):
         signal.signal(signal.SIGALRM, self.__timeout_handler)
         signal.alarm(self._loop_lapse)
-        for bet in bets:
-            self.__connect_and_send_bet_to_server(bet)
+        batches = [bets[i:i + batch_size] for i in range(0, len(bets), batch_size)]
+        for batch in batches:
+            self.__connect_and_send_batch_to_server(batch)
 
-    def __connect_and_send_bet_to_server(self, bet):
+    def __connect_and_send_batch_to_server(self, batch):
         try:
             self._socket = Socket(self._host, self._port)
             protocol = ClientProtocol()
-            protocol.send_bet(self._socket, bet)#"Andres", "Zambrano", 30904465, datetime.datetime.now(), 12345)
+            protocol.send_batch(self._socket, batch)
             protocol.recv_ok(self._socket)
-            logging.info("action: apuesta_enviada | result: success | dni: $30904465 | numero: $12345")
+            logging.info("action: batch_enviado | result: success")
             self._socket.shutdown_and_close()
             self._socket = None
         except OSError as e:

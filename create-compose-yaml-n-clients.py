@@ -43,15 +43,20 @@ for i in range(1, number_of_clients + 1):
     environment:
       - CLI_ID={}
       - CLI_LOG_LEVEL=DEBUG
+      - BETS_FILE_PATH=data/agency-{}.csv
     networks:
       - testing_net
     volumes:  
       - type: volume
         source: client-config
         target: /config
-        read_only: true  
+        read_only: true
+      - type: volume 
+        source: dataset
+        target: /data
+        read_only: true
     depends_on:
-      - server'''.format(i, i, i))
+      - server'''.format(i, i, i, i))
     f.write("\n")
 
 f.write('''
@@ -59,6 +64,8 @@ volumes:
   server-config:
     external: true
   client-config:
+    external: true
+  dataset:
     external: true
 
 networks:

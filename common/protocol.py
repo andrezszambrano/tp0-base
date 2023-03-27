@@ -3,6 +3,7 @@ import datetime
 
 class Protocol:
     OK_CHAR = 'O'
+    BATCH_SENT = 'D'
     BET_CHAR = 'B'
     FOUR_BYTES = 4
     ONE_BYTE = 1

@@ -51,10 +51,10 @@ class Server:
         """
         try:
             protocol = ServerProtocol()
-            bet = protocol.recv_bet(self._client_sock)
-            store_bets([bet])
+            bets = protocol.recv_bets_batch(self._client_sock)
+            store_bets(bets)
             #addr = self._client_sock.getpeername()
-            logging.info(f"action: apuesta_almacenada | result: success | dni: ${bet.document} | numero: ${bet.number}")
+            logging.info(f"action: batch_almacenado | result: success")
             protocol.send_ok(self._client_sock)
         except OSError as e:
             logging.error("action: receive_message | result: fail | error: {e}")
