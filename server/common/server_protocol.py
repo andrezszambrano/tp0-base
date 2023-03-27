@@ -25,5 +25,8 @@ class ServerProtocol(Protocol):
             bets.append(self.recv_bet(socket))
         return bets
 
+    def recv_agency_number(self, socket):
+        return super()._recv_n_byte_number(socket, super().ONE_BYTE)
+
     def send_ok(self, socket):
         super()._send_byte(socket, super().OK_CHAR)

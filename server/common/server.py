@@ -15,6 +15,7 @@ class Server:
         self._acceptor_socket = AcceptorSocket('', port, listen_backlog)
         self._client_sock = None
         signal.signal(signal.SIGTERM, self.__exit_gracefully)
+        self._clients_dict = {}
 
     def __exit_gracefully(self, signum, frame):
         self._acceptor_socket.shutdown_and_close()
@@ -51,13 +52,20 @@ class Server:
         """
         try:
             protocol = ServerProtocol()
-            bets = protocol.recv_bets_batch(self._client_sock)
-            store_bets(bets)
-            #addr = self._client_sock.getpeername()
-            logging.info(f"action: batch_almacenado | result: success")
-            protocol.send_ok(self._client_sock)
+            action = protocol.recv_char(self._client_sock)
+            if action == protocol.START_BATCH:
+                self.__recv_batch_from_client(protocol)
+            elif action == protocol.FINISHED_CHAR:
+                self.__save_agency_as_finished(protocol)
+            else:
+                if all(value == True for value in self._clients_dict.values()):
+                    protocol.send_ok()
+                    agency_number = protocol.recv_agency_number(self._client_sock)
+
+
+
         except OSError as e:
-            logging.error("action: receive_message | result: fail | error: {e}")
+            logging.error(f"action: receive_message | result: fail | error: {e}")
         finally:
             self._client_sock.shutdown_and_close()
             self._client_sock = None
@@ -75,3 +83,13 @@ class Server:
         c = self._acceptor_socket.accept()
         logging.info(f'action: accept_connections | result: success | ip: {c.getpeername()[0]}')
         return c
+
+    def __recv_batch_from_client(self, protocol):
+        bets = protocol.recv_bets_batch(self._client_sock)
+        store_bets(bets)
+        logging.debug(f"action: batch_almacenado | result: success")
+        protocol.send_ok(self._client_sock)
+
+    def __save_agency_as_finished(self, protocol):
+        agency_number = protocol.recv_agency_number(self._client_sock)
+        self._clients_dict[agency_number] = True
