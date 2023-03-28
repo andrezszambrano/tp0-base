@@ -6,9 +6,8 @@ class ClientProtocol(Protocol):
     def __init__(self):
         super(ClientProtocol, self).__init__()
 
-    def send_bet(self, socket, bet):
+    def __send_bet(self, socket, bet):
         super()._send_byte(socket, super().BET_CHAR)
-        super()._send_n_byte_number(socket, super().ONE_BYTE, bet.agency)
         super()._send_string(socket, bet.first_name)
         super()._send_string(socket, bet.last_name)
         super()._send_n_byte_number(socket, super().FOUR_BYTES, bet.document)
@@ -17,8 +16,9 @@ class ClientProtocol(Protocol):
 
     def send_batch(self, socket, batch):
         super()._send_byte(socket, super().START_BATCH)
+        super()._send_n_byte_number(socket, super().ONE_BYTE, batch[0].agency)
         for bet in batch:
-            self.send_bet(socket, bet)
+            self.__send_bet(socket, bet)
         super()._send_byte(socket, super().BATCH_SENT)
 
     def send_finished_message(self, socket, agency_id):
