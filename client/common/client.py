@@ -34,7 +34,7 @@ class Client:
     def run(self, bets, batch_size):
         signal.signal(signal.SIGALRM, self.__timeout_handler)
         signal.alarm(self._loop_lapse)
-        batches = [bets[i:i + batch_size] for i in range(0, len(bets), batch_size)]
+        batches = self.__generate_bets_batchs(bets, batch_size)
         for batch in batches:
             self.__connect_and_send_batch_to_server(batch)
         self.__send_finished_message_to_server()
@@ -71,16 +71,19 @@ class Client:
         except OSError as e:
             logging.error(f"action: connect | result: fail | client_id: {self._id} | error: {e}")
 
-    def __recv_agency_winners(self, agency_id):
+    def __recv_agency_winners(self):
         try:
             while True:
                 self._socket = Socket(self._host, self._port)
                 protocol = ClientProtocol()
-                winners = protocol.recv_number_of_winners(self._socket, agency_id)
-                if winners != -1:
-                    logging.debug(f"action: consulta_ganadores | result: success | cant_ganadores: ${winners}")
+                winners = protocol.try_to_recv_winners_documents(self._socket, self._id)
+                if winners != None:
+                    logging.debug(f"action: consulta_ganadores | result: success | cant_ganadores: ${len(winners)}")
                     break
                 self._socket.shutdown_and_close()
                 self._socket = None
         except OSError as e:
             logging.error(f"action: connect | result: fail | client_id: {self._id} | error: {e}")
+
+    def __generate_bets_batchs(self, bets, batch_size):
+        return [bets[i:i + batch_size] for i in range(0, len(bets), batch_size)]

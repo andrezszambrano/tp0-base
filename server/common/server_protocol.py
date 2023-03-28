@@ -28,5 +28,17 @@ class ServerProtocol(Protocol):
     def recv_agency_number(self, socket):
         return super()._recv_n_byte_number(socket, super().ONE_BYTE)
 
+    def recv_char(self, socket):
+        return super()._recv_byte(socket)
+
     def send_ok(self, socket):
         super()._send_byte(socket, super().OK_CHAR)
+
+    def send_forbidden(self, socket):
+        super()._send_byte(socket, super().FORBIDDEN)
+
+    def send_agency_winners_documents(self, socket, agency_winners):
+        for winner in agency_winners:
+            super()._send_byte(socket, super().OK)
+            super()._send_n_byte_number(socket, super().FOUR_BYTES, winner.document)
+        super()._send_byte(socket, super().FINISHED_CHAR)

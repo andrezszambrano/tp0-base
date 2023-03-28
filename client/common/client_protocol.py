@@ -25,13 +25,22 @@ class ClientProtocol(Protocol):
         super()._send_byte(socket, super().FINISHED_CHAR)
         super()._send_n_byte_number(socket, super().ONE_BYTE, agency_id)
 
-    def recv_number_of_winners(self, socket, agency_id):
+    def try_to_recv_winners_documents(self, socket, agency_id):
         super()._send_byte(socket, super().CONSULT_WINNERS)
+        super()._send_n_byte_number(socket, super().ONE_BYTE, agency_id)
         action = super()._recv_byte(socket)
         if action != super().OK_CHAR:
-            return -1
-        super()._send_n_byte_number(socket, super().ONE_BYTE, agency_id)
-        return super()._recv_n_byte_number(socket, super().TWO_BYTES)
+            return None
+        return self.__recv_winners_documents(socket)
+
+    def __recv_winners_documents(self, socket):
+        winners = []
+        while True:
+            action = super()._recv_byte(socket)
+            if action == super().FINISHED_CHAR:
+                break
+            winners.append(super()._recv_n_byte_number(socket, super().FOUR_BYTES))
+        return winners
 
     def recv_ok(self, socket):
         super()._recv_byte(socket)

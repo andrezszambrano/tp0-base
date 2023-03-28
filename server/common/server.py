@@ -6,7 +6,7 @@ import signal
 import sys
 
 from .server_protocol import ServerProtocol
-from .utils import store_bets
+from .utils import store_bets, load_bets, has_won
 
 
 class Server:
@@ -58,11 +58,12 @@ class Server:
             elif action == protocol.FINISHED_CHAR:
                 self.__save_agency_as_finished(protocol)
             else:
-                if all(value == True for value in self._clients_dict.values()):
-                    protocol.send_ok()
-                    agency_number = protocol.recv_agency_number(self._client_sock)
-
-
+                agency_number = protocol.recv_agency_number(self._client_sock)
+                if self.__all_agencies_finished():
+                    protocol.send_ok(self._client_sock)
+                    self.__load_bets_and_send_agency_winners(protocol, agency_number)
+                else:
+                    protocol.send_forbidden(self._client_sock)
 
         except OSError as e:
             logging.error(f"action: receive_message | result: fail | error: {e}")
@@ -87,9 +88,21 @@ class Server:
     def __recv_batch_from_client(self, protocol):
         bets = protocol.recv_bets_batch(self._client_sock)
         store_bets(bets)
+        self._clients_dict[bets[0].agency] = False
         logging.debug(f"action: batch_almacenado | result: success")
         protocol.send_ok(self._client_sock)
 
     def __save_agency_as_finished(self, protocol):
         agency_number = protocol.recv_agency_number(self._client_sock)
         self._clients_dict[agency_number] = True
+        if self.__all_agencies_finished():
+            logging.info("action: sorteo | result: success")
+
+    def __all_agencies_finished(self):
+        return all(value == True for value in self._clients_dict.values())
+
+
+    def __load_bets_and_send_agency_winners(self, protocol, agency_number):
+        bets = load_bets()
+        agency_winners = filter(lambda bet: has_won(bet) & bet.agency == agency_number, bets)
+        protocol.send_agency_winners_documents(self._client_sock, agency_winners)

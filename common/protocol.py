@@ -8,6 +8,7 @@ class Protocol:
     START_BATCH = 'S'
     BET_CHAR = 'B'
     CONSULT_WINNERS = 'W'
+    FORBIDDEN = 'F'
     FOUR_BYTES = 4
     TWO_BYTES = 2
     ONE_BYTE = 1
