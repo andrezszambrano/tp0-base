@@ -97,6 +97,7 @@ class Server:
         self._clients_dict[agency_number] = True
         if self.__all_agencies_finished():
             logging.info("action: sorteo | result: success")
+        protocol.send_ok(self._client_sock)
 
     def __all_agencies_finished(self):
         return all(value == True for value in self._clients_dict.values())

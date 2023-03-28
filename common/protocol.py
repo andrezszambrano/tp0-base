@@ -46,4 +46,4 @@ class Protocol:
     def _recv_date(self, socket):
         date_len = self._recv_n_byte_number(socket, self.ONE_BYTE)
         date_str = socket.recv(date_len).decode('utf-8')
-        return datetime.datetime.strptime(date_str, "%Y-%m-%d")
+        return datetime.date.fromisoformat(date_str)

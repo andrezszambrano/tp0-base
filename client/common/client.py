@@ -51,21 +51,13 @@ class Client:
         except OSError as e:
             logging.error(f"action: connect | result: fail | client_id: {self._id} | error: {e}")
 
-    def __send_message_to_server(self, protocol, msg_id):
-        try:
-            protocol.send_default_message(self._socket, self._id, msg_id)
-            msg = protocol.recv_message(self._socket)
-            logging.info(f"action: receive_message | result: success | client_id: {self._id} | msg: {msg}")
-        except OSError as e:
-            logging.error(f"action: receive_message | result: fail | client_id: {self._id} | error: {e}")
-
     def __send_finished_message_to_server(self):
         try:
             self._socket = Socket(self._host, self._port)
             protocol = ClientProtocol()
             protocol.send_finished_message(self._socket, self._id)
             protocol.recv_ok(self._socket)
-            logging.debug("action: agencia_registrada_como_finalizada | result: success")
+            logging.info("action: agencia_registrada_como_finalizada | result: success")
             self._socket.shutdown_and_close()
             self._socket = None
         except OSError as e:
@@ -78,10 +70,11 @@ class Client:
                 protocol = ClientProtocol()
                 winners = protocol.try_to_recv_winners_documents(self._socket, self._id)
                 if winners != None:
-                    logging.debug(f"action: consulta_ganadores | result: success | cant_ganadores: ${len(winners)}")
+                    logging.info(f"action: consulta_ganadores | result: success | cant_ganadores: ${len(winners)}")
                     break
                 self._socket.shutdown_and_close()
                 self._socket = None
+                logging.debug("Not there")
         except OSError as e:
             logging.error(f"action: connect | result: fail | client_id: {self._id} | error: {e}")
 
