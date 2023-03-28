@@ -60,6 +60,7 @@ class Server:
             else:
                 agency_number = protocol.recv_agency_number(self._client_sock)
                 if self.__all_agencies_finished():
+                    logging.debug(f"Se regresa ganadores de la agencia {agency_number}")
                     protocol.send_ok(self._client_sock)
                     self.__load_bets_and_send_agency_winners(protocol, agency_number)
                 else:
@@ -102,8 +103,7 @@ class Server:
     def __all_agencies_finished(self):
         return all(value == True for value in self._clients_dict.values())
 
-
     def __load_bets_and_send_agency_winners(self, protocol, agency_number):
         bets = load_bets()
-        agency_winners = filter(lambda bet: has_won(bet) & bet.agency == agency_number, bets)
+        agency_winners = filter(lambda bet: has_won(bet) and bet.agency == agency_number, bets)
         protocol.send_agency_winners_documents(self._client_sock, agency_winners)

@@ -74,7 +74,6 @@ class Client:
                     break
                 self._socket.shutdown_and_close()
                 self._socket = None
-                logging.debug("Not there")
         except OSError as e:
             logging.error(f"action: connect | result: fail | client_id: {self._id} | error: {e}")
 
