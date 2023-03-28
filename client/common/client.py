@@ -4,7 +4,7 @@ import signal
 import sys
 import time
 from .client_protocol import ClientProtocol
-from .socket import Socket
+from .socket_wrapper import Socket
 
 
 class Client:

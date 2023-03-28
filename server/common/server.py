@@ -1,6 +1,6 @@
-from .socket import Socket
-from .acceptor_socket import AcceptorSocket
-from .bet import Bet
+import subprocess
+from time import sleep
+
 import logging
 import signal
 import sys
@@ -12,14 +12,12 @@ from .utils import store_bets, load_bets, has_won
 class Server:
     def __init__(self, port, listen_backlog):
         # Initialize server socket
-        self._acceptor_socket = AcceptorSocket('', port, listen_backlog)
         self._client_sock = None
         signal.signal(signal.SIGTERM, self.__exit_gracefully)
         self._clients_dict = {}
 
     def __exit_gracefully(self, signum, frame):
-        self._acceptor_socket.shutdown_and_close()
-        logging.info(f'action: server socket closed | result: success')
+        logging.info(f'closing')
         if self._client_sock != None:
             self._client_sock.shutdown_and_close()
             logging.info(f'action: client socket closed | result: success')
@@ -39,9 +37,13 @@ class Server:
         # Modify this program to handle signal to graceful shutdown
         # the server
 
-        while True:
-            self._client_sock = self.__accept_new_connection()
-            self.__handle_client_connection()
+        acceptor_process = subprocess.Popen(['python', '../acceptor_process/main.py', '../config/config.ini'])
+        sleep(5)
+        acceptor_process.send_signal(signal.SIGTERM)
+        acceptor_process.wait()
+        #while True:
+            #self._client_sock = self.__accept_new_connection()
+            #self.__handle_client_connection()
 
     def __handle_client_connection(self):
         """

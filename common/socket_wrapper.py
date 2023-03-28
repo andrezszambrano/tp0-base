@@ -1,6 +1,5 @@
 import socket
 
-
 class Socket:
 
     def __init__(self, host, port, created_socket = None):
