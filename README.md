@@ -12,17 +12,60 @@ Modificar la definición del DockerCompose para agregar un nuevo cliente al proy
 Para ejecutar el script: python create-compose-yaml-n-clients.py N, siendo N >= 1
 
 ### Ejercicio N°2:
-Modificar el cliente y el servidor para lograr que realizar cambios en el archivo de configuración no requiera un nuevo build de las imágenes de Docker para que los mismos sean efectivos. La configuración a través del archivo correspondiente (`config.ini` y `config.yaml`, dependiendo de la aplicación) debe ser inyectada en el container y persistida afuera de la imagen (hint: `docker volumes`).
+Para crear el volumen del servidor:  
+docker volume create server-config
+
+Para acceder al volumen creado:
+sudo su
+cd /var/lib/docker/volumes/server-config/_data/
+
+Agregar el archivo config.ini:
+[DEFAULT]
+SERVER_PORT = 12345
+SERVER_IP = server
+SERVER_LISTEN_BACKLOG = 51
+LOGGING_LEVEL = INFO
+
+Pudiendo cambiar cualquiera de los datos correspondientemente.
+
+Para crear el volumen del cliente:  
+docker volume create client-config
+
+Acceder al volumen creado como con el volumen del servidor, y agregar el archivo config.yaml con el formato:  
+server:
+  address: "server:12345"
+loop:
+  lapse: "0m20s"
+  period: "5s"
+log:
+  level: "info"
+
+Al ejecutar make docker-compose-up, los contenedores van a poder acceder a su correspondiente archivo de configuración.   
+Si se quiere modificar un archivo de configuración pero sin tener que pasar por el proceso del build, se puede ejecutar el comando:  
+make docker-compose-up-without-build.
 
 ### Ejercicio N°3:
-Crear un script que permita verificar el correcto funcionamiento del servidor utilizando el comando `netcat` para interactuar con el mismo. Dado que el servidor es un EchoServer, se debe enviar un mensaje al servidor y esperar recibir el mismo mensaje enviado. Netcat no debe ser instalado en la máquina _host_ y no se puede exponer puertos del servidor para realizar la comunicación (hint: `docker network`).
+Para ejecutar el test, traerse lo que está en la rama ej.3 y ejecutar el comando:  
+make docker-compose-test. Se deberá ver en pantalla el mensaje "test passed".
 
 ### Ejercicio N°4:
-Modificar servidor y cliente para que ambos sistemas terminen de forma _graceful_ al recibir la signal SIGTERM. Terminar la aplicación de forma _graceful_ implica que todos los _file descriptors_ (entre los que se encuentran archivos, sockets, threads y procesos) deben cerrarse correctamente antes que el thread de la aplicación principal muera. Loguear mensajes en el cierre de cada recurso (hint: Verificar que hace el flag `-t` utilizado en el comando `docker compose down`).
+Nota: el cliente ahora está en python, así que para configurarlo hay que tener un archivo config.ini en el volumen del cliente.  
+[DEFAULT]
+SERVER_ADDRESS = server:12345
+LAPSE = "0m20s"
+PERIOD = "0m5s"
+LOGGING_LEVEL = INFO
+
+Para verificar que ambos programas finalizan de forma _graceful_:  
+Traerse la rama ej.4 y ejecutar:
+make docker-compose-up
+make docker-compose-stop
+make docker-compose-log
+En los que se verá un mensaje "action: sigterm detected, {client||server} shutdowned | result: success" de acuerdo al proceso que finalizó.
 
 ## Parte 2: Repaso de Comunicaciones
 
-Las secciones de repaso del trabajo práctico plantean un caso de uso denominado **Lotería Nacional**. Para la resolución de las mismas deberá utilizarse como base al código fuente provisto en la primera parte, con las modificaciones agregadas en el ejercicio 4.
+Nota: por una cuestión de modelado que se realizó previamente al uso de las funciones load_bets y store_bets (ya que no sabía que ya habían provisto una clase Bet), el parseo de los datos (por ej. la fecha de nacimiento) que en el código dado por la catedra lo realiza la propia Bet, pasa a ser responsabilidad del que crea la Bet, por lo que se termina realizando afuera del constructor del mismo. 
 
 ### Ejercicio N°5:
 Para ejecutar, traerse la rama ej.5 y ejecutar un make docker-compose-up. Se deberá ver por pantalla el log 2023-03-30 03:59:35 INFO     action: apuesta_enviada | result: success | dni: $30904465 | numero: $12345.
