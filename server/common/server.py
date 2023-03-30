@@ -1,20 +1,24 @@
-import subprocess
+from multiprocessing import Process, SimpleQueue
 from time import sleep
 
 import logging
 import signal
 import sys
 
+from .bets_db_monitor import BetsDBMonitor
+from .client_handler import *
+from .clients_finished_map import ClientsFinishedMap
 from .server_protocol import ServerProtocol
-from .utils import store_bets, load_bets, has_won
+from .acceptor import Acceptor
 
 
 class Server:
     def __init__(self, port, listen_backlog):
         # Initialize server socket
         self._client_sock = None
+        self._acceptor = Acceptor(port, listen_backlog)
         signal.signal(signal.SIGTERM, self.__exit_gracefully)
-        self._clients_dict = {}
+        self._client_processes = []
 
     def __exit_gracefully(self, signum, frame):
         logging.info(f'closing')
@@ -37,75 +41,32 @@ class Server:
         # Modify this program to handle signal to graceful shutdown
         # the server
 
-        acceptor_process = subprocess.Popen(['python', '../acceptor_process/main.py', '../config/config.ini'])
-        sleep(5)
-        acceptor_process.send_signal(signal.SIGTERM)
-        acceptor_process.wait()
-        #while True:
-            #self._client_sock = self.__accept_new_connection()
-            #self.__handle_client_connection()
+        queue = SimpleQueue()
+        clients_map = ClientsFinishedMap()
+        bets_monitor = BetsDBMonitor()
+        acceptor_process = Process(target=self._acceptor.run, args=(queue,), daemon=True)
+        acceptor_process.start()
 
-    def __handle_client_connection(self):
-        """
-        Read message from a specific client socket and closes the socket
+        while True:
+            message = queue.get()
+            if message[0] == NEW_SOCKET:
+                client_process = self.__create_and_start_client_handler_process(
+                    queue, message[1], clients_map, bets_monitor)
+                self._client_processes.append(client_process)
+            if message[0] == FINALIZED_AGENCY:
+                if clients_map.all_agencies_finished():
+                    break
 
-        If a problem arises in the communication with the client, the
-        client socket will also be closed
-        """
-        try:
-            protocol = ServerProtocol()
-            action = protocol.recv_char(self._client_sock)
-            if action == protocol.START_BATCH:
-                self.__recv_batch_from_client(protocol)
-            elif action == protocol.FINISHED_CHAR:
-                self.__save_agency_as_finished(protocol)
-            else:
-                agency_number = protocol.recv_agency_number(self._client_sock)
-                if self.__all_agencies_finished():
-                    logging.debug(f"Se regresa ganadores de la agencia {agency_number}")
-                    protocol.send_ok(self._client_sock)
-                    self.__load_bets_and_send_agency_winners(protocol, agency_number)
-                else:
-                    protocol.send_forbidden(self._client_sock)
+        acceptor_process.terminate()
+        acceptor_process.join()
+        for client_process in self._client_processes:
+            client_process.join()
 
-        except OSError as e:
-            logging.error(f"action: receive_message | result: fail | error: {e}")
-        finally:
-            self._client_sock.shutdown_and_close()
-            self._client_sock = None
+    def __create_and_start_client_handler_process(self, queue, agency_number, clients_map,
+                                                  bets_monitor):
+        client_handler = ClientHandler(agency_number, queue, clients_map, bets_monitor)
+        client_process = Process(target=client_handler.run, args=(),
+                                 daemon=True)
+        client_process.start()
+        return client_process
 
-    def __accept_new_connection(self):
-        """
-        Accept new connections
-
-        Function blocks until a connection to a client is made.
-        Then connection created is printed and returned
-        """
-
-        # Connection arrived
-        logging.info('action: accept_connections | result: in_progress')
-        c = self._acceptor_socket.accept()
-        logging.info(f'action: accept_connections | result: success | ip: {c.getpeername()[0]}')
-        return c
-
-    def __recv_batch_from_client(self, protocol):
-        bets = protocol.recv_bets_batch(self._client_sock)
-        store_bets(bets)
-        self._clients_dict[bets[0].agency] = False
-        logging.debug(f"action: batch_almacenado | result: success")
-        protocol.send_ok(self._client_sock)
-
-    def __save_agency_as_finished(self, protocol):
-        agency_number = protocol.recv_agency_number(self._client_sock)
-        self._clients_dict[agency_number] = True
-        if self.__all_agencies_finished():
-            logging.info("action: sorteo | result: success")
-        protocol.send_ok(self._client_sock)
-
-    def __all_agencies_finished(self):
-        return all(value == True for value in self._clients_dict.values())
-
-    def __load_bets_and_send_agency_winners(self, protocol, agency_number):
-        bets = load_bets()
-        agency_winners = filter(lambda bet: has_won(bet) and bet.agency == agency_number, bets)
-        protocol.send_agency_winners_documents(self._client_sock, agency_winners)

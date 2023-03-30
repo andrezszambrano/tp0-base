@@ -1,5 +1,5 @@
 import socket
-from socket_wrapper import Socket
+from .socket_wrapper import Socket
 
 
 class AcceptorSocket():

@@ -15,9 +15,8 @@ class ServerProtocol(Protocol):
         bet_number = super()._recv_n_byte_number(socket, super().FOUR_BYTES)
         return Bet(agency, name, last_name, id, birth_date, bet_number)
 
-    def recv_bets_batch(self, socket):
+    def recv_bets_batch(self, socket, agency_number):
         bets = []
-        agency_number = super()._recv_n_byte_number(socket, super().ONE_BYTE)
         while True:
             action_char = super()._recv_byte(socket)
             if action_char == super().BATCH_SENT:
