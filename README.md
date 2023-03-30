@@ -1,5 +1,7 @@
 # TP0: Docker + Comunicaciones + Concurrencia
 
+Nota: todos los comandos hay que ejecutarlo en la carpeta root del repositorio.
+
 ## Parte 1: Introducción a Docker
 En esta primera parte del trabajo práctico se plantean una serie de ejercicios que sirven para introducir las herramientas básicas de Docker que se utilizarán a lo largo de la materia. El entendimiento de las mismas será crucial para el desarrollo de los próximos TPs.
 
@@ -7,7 +9,7 @@ En esta primera parte del trabajo práctico se plantean una serie de ejercicios 
 Modificar la definición del DockerCompose para agregar un nuevo cliente al proyecto.
 
 ### Ejercicio N°1.1:
-Definir un script (en el lenguaje deseado) que permita crear una definición de DockerCompose con una cantidad configurable de clientes.
+Para ejecutar el script: python create-compose-yaml-n-clients.py N, siendo N >= 1
 
 ### Ejercicio N°2:
 Modificar el cliente y el servidor para lograr que realizar cambios en el archivo de configuración no requiera un nuevo build de las imágenes de Docker para que los mismos sean efectivos. La configuración a través del archivo correspondiente (`config.ini` y `config.yaml`, dependiendo de la aplicación) debe ser inyectada en el container y persistida afuera de la imagen (hint: `docker volumes`).
@@ -41,7 +43,8 @@ Para este ejercicio se modificó el protocolo levemente: Ahora se manda una list
 
 
 ### Ejercicio N°7:
-Traerse la rama ej.7 y ejecutar un make docker-compose-up. Se deberá ver por pantalla la cantidad de ganadores por cada agencia/
+Traerse la rama ej.7 y ejecutar un make docker-compose-up. Se deberá ver por pantalla la cantidad de ganadores por cada agencia
+
 client5  | 2023-03-30 05:08:13 INFO     action: consulta_ganadores | result: success | cant_ganadores: $0
 client3  | 2023-03-30 05:08:13 INFO     action: consulta_ganadores | result: success | cant_ganadores: $3
 client4  | 2023-03-30 05:08:14 INFO     action: consulta_ganadores | result: success | cant_ganadores: $2
@@ -56,15 +59,25 @@ Ahora bien, los clientes también le preguntan al servidor por la cantidad de ga
 ## Parte 3: Repaso de Concurrencia
 
 ### Ejercicio N°8:
-Modificar el servidor para que permita aceptar conexiones y procesar mensajes en paralelo.
-En este ejercicio es importante considerar los mecanismos de sincronización a utilizar para el correcto funcionamiento de la persistencia.
+Traerse la rama ej.8 y ejecutar un make docker-compose-up. Se deberá ver por pantalla la cantidad de ganadores por cada agencia como en el inciso anterior.
 
-En caso de que el alumno implemente el servidor Python utilizando _multithreading_,  deberán tenerse en cuenta las [limitaciones propias del lenguaje](https://wiki.python.org/moin/GlobalInterpreterLock).
+client5  | 2023-03-30 05:08:13 INFO     action: consulta_ganadores | result: success | cant_ganadores: $0
+client3  | 2023-03-30 05:08:13 INFO     action: consulta_ganadores | result: success | cant_ganadores: $3
+client4  | 2023-03-30 05:08:14 INFO     action: consulta_ganadores | result: success | cant_ganadores: $2
+client2  | 2023-03-30 05:08:14 INFO     action: consulta_ganadores | result: success | cant_ganadores: $3
+client1  | 2023-03-30 05:08:15 INFO     action: consulta_ganadores | result: success | cant_ganadores: $2
 
-## Consideraciones Generales
-Se espera que los alumnos realicen un _fork_ del presente repositorio para el desarrollo de los ejercicios.
-El _fork_ deberá contar con una sección de README que indique como ejecutar cada ejercicio.
-La Parte 2 requiere una sección donde se explique el protocolo de comunicación implementado.
-La Parte 3 requiere una sección que expliquen los mecanismos de sincronización utilizados.
+##### Concurrencia  
+Hay tres tipos de procesos:  
+1. El principal, que se encarga de crear los otros procesos y finalizar los otros procesos. Solo hay uno.
+2. El aceptador, que se encarga de aceptar nuevos sockets y pasarselo al proceso principal a través de una cola. Solo hay uno.
+3. El manejador de cliente, que se encarga de hacer las peticiones del cliente. Hay uno por socket inicializado, es decir, uno por cliente, en este caso cinco. Una vez terminado, el manejador le avisa al proceso principal a través de una cola que su proceso terminó.
 
-Finalmente, se pide a los alumnos leer atentamente y **tener en cuenta** los criterios de corrección provistos [en el campus](https://campusgrado.fi.uba.ar/mod/page/view.php?id=73393).
+Hay dos monitores que cada manejador de cliente va a tener acceso. El primero es el mapa de clientes finalizados: cuando un manejador termina con su cliente, accede al mapa y coloca que su proceso ya acabó. Como varios procesos pueden estar consultando esa información (para, por ejemplo, saber que se le puede regresar al cliente los ganadores del sorteo) al mismo tiempo, es necesario que esté protegida con un lock.
+
+El otro monitor es el de la base de datos. Para escribir en la misma hay que tomar un lock. Como para el momento en el que las agencias cargan los ganadores de la base de datos ya no hay ninguna escribiendo información, no es necesario usar el lock.
+
+##### Protocolo
+Dado el nuevo modelo, el protocolo cambió mínimamente para acomodar el modelo. Como una vez aceptado un socket se crea un nuevo proceso que va a almacenar el mismo, no es necesario que el cliente se vuelva a conectar cada vez que quiere enviar un paquete. Por lo tanto, el cliente al conectarse va a enviar su número de agencia, y ya no es necesario volverlo a enviar para el resto de los mensajes.
+
+Cabe recalcar que, por falta de tiempo, no se contempló en el cliente el caso en el que se cae la conexión y que hay que volver a conectarse al servidor, y que el servidor no libera el proceso del cliente caido (la única forma de liberarlo es que el proceso termine sin ningún error).
