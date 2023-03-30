@@ -1,6 +1,7 @@
 import logging
 from .protocol import Protocol
 from .bet import Bet
+from .packet import Packet
 
 class ServerProtocol(Protocol):
 
@@ -37,7 +38,10 @@ class ServerProtocol(Protocol):
         super()._send_byte(socket, super().FORBIDDEN)
 
     def send_agency_winners_documents(self, socket, agency_winners):
+        #Not a lot of winners so packet are always small
+        packet = Packet()
         for winner in agency_winners:
-            super()._send_byte(socket, super().OK_CHAR)
-            super()._send_n_byte_number(socket, super().FOUR_BYTES, winner.document)
-        super()._send_byte(socket, super().FINISHED_CHAR)
+            packet.add_byte(super().OK_CHAR)
+            packet.add_n_byte_number(super().FOUR_BYTES, winner.document)
+        packet.add_byte(super().FINISHED_CHAR)
+        packet.send_to_socket(socket)
