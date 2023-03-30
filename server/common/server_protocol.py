@@ -7,8 +7,7 @@ class ServerProtocol(Protocol):
     def __init__(self):
         super(ServerProtocol, self).__init__()
 
-    def recv_bet(self, socket):
-        agency = super()._recv_n_byte_number(socket, super().ONE_BYTE)
+    def recv_bet(self, socket, agency):
         name = super()._recv_string(socket)
         last_name = super()._recv_string(socket)
         id = super()._recv_n_byte_number(socket, super().FOUR_BYTES)
@@ -18,11 +17,12 @@ class ServerProtocol(Protocol):
 
     def recv_bets_batch(self, socket):
         bets = []
+        agency = super()._recv_n_byte_number(socket, super().ONE_BYTE)
         while True:
             action_char = super()._recv_byte(socket)
             if action_char == super().BATCH_SENT:
                 break
-            bets.append(self.recv_bet(socket))
+            bets.append(self.recv_bet(socket, agency))
         return bets
 
     def send_ok(self, socket):
