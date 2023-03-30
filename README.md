@@ -22,10 +22,15 @@ sudo su
 cd /var/lib/docker/volumes/server-config/_data/
 
 Agregar el archivo config.ini:
+
 [DEFAULT]
+
 SERVER_PORT = 12345
+
 SERVER_IP = server
+
 SERVER_LISTEN_BACKLOG = 51
+
 LOGGING_LEVEL = INFO
 
 Pudiendo cambiar cualquiera de los datos correspondientemente.
@@ -35,11 +40,17 @@ docker volume create client-config
 
 Acceder al volumen creado como con el volumen del servidor, y agregar el archivo config.yaml con el formato:  
 server:
+
   address: "server:12345"
+  
 loop:
+
   lapse: "0m20s"
+  
   period: "5s"
+  
 log:
+
   level: "info"
 
 Al ejecutar make docker-compose-up, los contenedores van a poder acceder a su correspondiente archivo de configuración.   
@@ -52,10 +63,15 @@ make docker-compose-test. Se deberá ver en pantalla el mensaje "test passed".
 
 ### Ejercicio N°4:
 Nota: el cliente ahora está en python, así que para configurarlo hay que tener un archivo config.ini en el volumen del cliente.  
+
 [DEFAULT]
+
 SERVER_ADDRESS = server:12345
+
 LAPSE = "0m20s"
+
 PERIOD = "0m5s"
+
 LOGGING_LEVEL = INFO
 
 Para verificar que ambos programas finalizan de forma _graceful_:  
