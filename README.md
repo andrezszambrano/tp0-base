@@ -16,7 +16,9 @@ Para crear el volumen del servidor:
 docker volume create server-config
 
 Para acceder al volumen creado:
+
 sudo su
+
 cd /var/lib/docker/volumes/server-config/_data/
 
 Agregar el archivo config.ini:
