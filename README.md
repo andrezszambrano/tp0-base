@@ -141,4 +141,6 @@ El otro monitor es el de la base de datos. Para escribir en la misma hay que tom
 ##### Protocolo
 Dado el nuevo modelo, el protocolo cambió mínimamente para acomodar el modelo. Como una vez aceptado un socket se crea un nuevo proceso que va a almacenar el mismo, no es necesario que el cliente se vuelva a conectar cada vez que quiere enviar un paquete. Por lo tanto, el cliente al conectarse va a enviar su número de agencia, y ya no es necesario volverlo a enviar para el resto de los mensajes.
 
-Cabe recalcar que, por falta de tiempo, no se contempló en el cliente el caso en el que se cae la conexión y que hay que volver a conectarse al servidor, y que el servidor no libera el proceso del cliente caido (la única forma de liberarlo es que el proceso termine sin ningún error).
+##### Falencias del sistema
+Si el sistema (clientes + proceso de los servidores) termina de forma natural, se liberan todos los recursos acordemente. Sin embargo, por falta de tiempo el sistema no aguanta sigterms ni en el cliente ni en el servidor. 
+Tampoco están contemplado el caso en el cliente el caso en el que se cae la conexión y que hay que volver a conectarse al servidor, y que el servidor no libera el proceso del cliente caido (la única forma de liberarlo es que el proceso termine sin ningún error).
