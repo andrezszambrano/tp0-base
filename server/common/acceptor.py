@@ -15,8 +15,6 @@ class Acceptor:
     def __exit_gracefully(self, signum, frame):
         self._acceptor_socket.shutdown_and_close()
         logging.info(f'action: server socket closed | result: success')
-
-        logging.info(f'action: sigterm detected, server shutdowned | result: success')
         sys.exit(0)
 
     def run(self, queue):

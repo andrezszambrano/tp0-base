@@ -56,7 +56,6 @@ class ClientHandler:
     def __recv_batch_from_client(self, protocol):
         bets = protocol.recv_bets_batch(self._client_sock, self._agency_number)
         self._bets_monitor.store_bets(bets)
-        logging.debug(f"action: batch_almacenado | result: success")
         protocol.send_ok(self._client_sock)
 
     def __save_agency_as_finished(self, protocol):

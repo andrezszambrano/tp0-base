@@ -21,11 +21,6 @@ class Server:
         self._client_processes = []
 
     def __exit_gracefully(self, signum, frame):
-        logging.info(f'closing')
-        if self._client_sock != None:
-            self._client_sock.shutdown_and_close()
-            logging.info(f'action: client socket closed | result: success')
-
         logging.info(f'action: sigterm detected, server shutdowned | result: success')
         sys.exit(0)
 
