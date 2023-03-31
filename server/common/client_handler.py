@@ -18,12 +18,13 @@ class ClientHandler:
     def run(self):
         protocol = ServerProtocol()
         self._agency_number = protocol.recv_agency_number(self._client_sock)
-
-        while True:
+        self._finished = False
+        while not self._finished:
             self.__handle_client_connection()
 
         self._client_sock.shutdown_and_close()
         self._client_sock = None
+        self._queue.put((FINALIZED_AGENCY, ))
 
     def __handle_client_connection(self):
         """
@@ -44,6 +45,7 @@ class ClientHandler:
                     logging.debug(f"Se regresa ganadores de la agencia {self._agency_number}")
                     protocol.send_ok(self._client_sock)
                     self.__load_bets_and_send_agency_winners(protocol)
+                    self._finished = True
                 else:
                     protocol.send_forbidden(self._client_sock)
 
