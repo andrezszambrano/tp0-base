@@ -16,9 +16,9 @@ services:
     networks:
       - testing_net
     volumes:  
-      - type: volume
-        source: server-config
-        target: /config
+      - type: bind
+        source: ./server/config.ini
+        target: /config/config.ini
         read_only: true''')
 
 f.write("\n")
@@ -35,10 +35,10 @@ for i in range(1, number_of_clients + 1):
     networks:
       - testing_net
     volumes:  
-      - type: volume
-        source: client-config
-        target: /config
-        read_only: true  
+      - type: bind
+        source: ./client/config.yaml
+        target: /config/config.yaml
+        read_only: true
     depends_on:
       - server'''.format(i, i, i))
     f.write("\n")
@@ -46,9 +46,9 @@ for i in range(1, number_of_clients + 1):
 f.write('''
 volumes:
   server-config:
-    external: true
+    external: false
   client-config:
-    external: true
+    external: false
 
 networks:
   testing_net:
