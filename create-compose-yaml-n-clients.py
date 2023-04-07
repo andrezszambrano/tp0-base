@@ -47,8 +47,8 @@ for i in range(1, number_of_clients + 1):
       - testing_net
     volumes:  
       - type: bind
-        source: ./client/config.yaml
-        target: /config/config.yaml
+        source: ./client/config.ini
+        target: /config/config.ini
         read_only: true
     depends_on:
       - server'''.format(i, i, i))
