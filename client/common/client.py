@@ -64,7 +64,7 @@ class Client:
         try:
             while True:
                 protocol = ClientProtocol()
-                winners = protocol.try_to_recv_winners_documents(self._socket, self._id)
+                winners = protocol.recv_winners_documents(self._socket, self._id)
                 if winners != None:
                     logging.info(f"action: consulta_ganadores | result: success | cant_ganadores: ${len(winners)}")
                     break

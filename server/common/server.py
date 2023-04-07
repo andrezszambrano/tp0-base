@@ -1,4 +1,4 @@
-from multiprocessing import Process, SimpleQueue
+from multiprocessing import Process, SimpleQueue, Barrier
 from time import sleep
 
 import logging
@@ -7,8 +7,6 @@ import sys
 
 from .bets_db_monitor import BetsDBMonitor
 from .client_handler import *
-from .clients_finished_map import ClientsFinishedMap
-from .server_protocol import ServerProtocol
 from .acceptor import Acceptor
 
 
@@ -37,7 +35,7 @@ class Server:
         # the server
 
         queue = SimpleQueue()
-        clients_map = ClientsFinishedMap()
+        barrier = Barrier(5)
         bets_monitor = BetsDBMonitor()
         acceptor_process = Process(target=self._acceptor.run, args=(queue,), daemon=True)
         acceptor_process.start()
@@ -46,11 +44,10 @@ class Server:
             message = queue.get()
             if message[0] == NEW_SOCKET:
                 client_process = self.__create_and_start_client_handler_process(
-                    queue, message[1], clients_map, bets_monitor)
+                    queue, message[1], barrier, bets_monitor)
                 self._client_processes.append(client_process)
             if message[0] == FINALIZED_AGENCY:
-                if clients_map.all_agencies_finished():
-                    break
+                break
 
         acceptor_process.terminate()
         acceptor_process.join()

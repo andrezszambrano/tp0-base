@@ -28,13 +28,10 @@ class ClientProtocol(Protocol):
     def send_finished_message(self, socket):
         super()._send_byte(socket, super().FINISHED_CHAR)
 
-    def try_to_recv_winners_documents(self, socket, agency_id):
+    def recv_winners_documents(self, socket, agency_id):
         packet = Packet()
         packet.add_byte(super().CONSULT_WINNERS)
         packet.send_to_socket(socket)
-        action = super()._recv_byte(socket)
-        if action != super().OK_CHAR:
-            return None
         return self.__recv_winners_documents(socket)
 
     def __recv_winners_documents(self, socket):
