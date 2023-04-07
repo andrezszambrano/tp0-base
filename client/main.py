@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import datetime
+import sys
 from configparser import ConfigParser
 
 from common.bets_file import BetsFile
@@ -68,6 +69,7 @@ def main():
     # Initialize client and start server loop
     client = Client(id, server_address, lapse, period)
     client.run(bets, batch_size)
+    sys.exit(0)
 
 def initialize_log(logging_level):
     """
