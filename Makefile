@@ -31,6 +31,9 @@ docker-compose-up: docker-image
 	docker compose -f docker-compose-dev.yaml up -d --build
 .PHONY: docker-compose-up
 
+docker-compose-up-without-build: docker-image
+	docker compose -f docker-compose-dev.yaml up -d
+.PHONY: docker-compose-up-without-build
 
 docker-compose-test: docker-image
 	docker compose -f docker-compose-dev.yaml run server-test
