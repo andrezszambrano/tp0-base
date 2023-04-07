@@ -31,6 +31,9 @@ docker-compose-up: docker-image
 	docker compose -f docker-compose-dev.yaml up -d --build
 .PHONY: docker-compose-up
 
+docker-compose-up-without-build: docker-image
+	docker compose -f docker-compose-dev.yaml up -d
+.PHONY: docker-compose-up-without-build
 
 docker-compose-test: docker-image
 	docker compose -f docker-compose-dev.yaml run server-test
@@ -40,6 +43,10 @@ docker-compose-down:
 	docker compose -f docker-compose-dev.yaml stop -t 1
 	docker compose -f docker-compose-dev.yaml down
 .PHONY: docker-compose-down
+
+docker-compose-stop:
+	docker compose -f docker-compose-dev.yaml stop -t 1
+.PHONY: docker-compose-stop
 
 docker-compose-logs:
 	docker compose -f docker-compose-dev.yaml logs -f
