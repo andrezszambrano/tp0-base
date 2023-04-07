@@ -11,9 +11,9 @@ services:
     networks:
       - testing_net
     volumes:  
-      - type: volume
-        source: server-config
-        target: /config
+      - type: bind
+        source: ./server/config.ini
+        target: /config/config.ini
         read_only: true
 
   server-test:
@@ -42,18 +42,18 @@ services:
     networks:
       - testing_net
     volumes:  
-      - type: volume
-        source: client-config
-        target: /config
-        read_only: true  
+      - type: bind
+        source: ./client/config.ini
+        target: /config/config.ini
+        read_only: true
     depends_on:
       - server
 
 volumes:
   server-config:
-    external: true
+    external: false
   client-config:
-    external: true
+    external: false
 
 networks:
   testing_net:
