@@ -12,48 +12,8 @@ Modificar la definición del DockerCompose para agregar un nuevo cliente al proy
 Para ejecutar el script: python create-compose-yaml-n-clients.py N, siendo N >= 1
 
 ### Ejercicio N°2:
-Para crear el volumen del servidor:  
-docker volume create server-config
+Al ejecutar make docker-compose-up, los contenedores van a poder acceder a su correspondiente archivo de configuración sin necesidad de configuración extra.
 
-Para acceder al volumen creado:
-
-sudo su
-
-cd /var/lib/docker/volumes/server-config/_data/
-
-Agregar el archivo config.ini:
-
-[DEFAULT]
-
-SERVER_PORT = 12345
-
-SERVER_IP = server
-
-SERVER_LISTEN_BACKLOG = 51
-
-LOGGING_LEVEL = INFO
-
-Pudiendo cambiar cualquiera de los datos correspondientemente.
-
-Para crear el volumen del cliente:  
-docker volume create client-config
-
-Acceder al volumen creado como con el volumen del servidor, y agregar el archivo config.yaml con el formato:  
-server:
-
-  address: "server:12345"
-  
-loop:
-
-  lapse: "0m20s"
-  
-  period: "5s"
-  
-log:
-
-  level: "info"
-
-Al ejecutar make docker-compose-up, los contenedores van a poder acceder a su correspondiente archivo de configuración.   
 Si se quiere modificar un archivo de configuración pero sin tener que pasar por el proceso del build, se puede ejecutar el comando:  
 make docker-compose-up-without-build.
 
@@ -62,17 +22,7 @@ Para ejecutar el test, traerse lo que está en la rama ej.3 y ejecutar el comand
 make docker-compose-test. Se deberá ver en pantalla el mensaje "test passed".
 
 ### Ejercicio N°4:
-Nota: el cliente ahora está en python, así que para configurarlo hay que tener un archivo config.ini en el volumen del cliente.  
-
-[DEFAULT]
-
-SERVER_ADDRESS = server:12345
-
-LAPSE = "0m20s"
-
-PERIOD = "0m5s"
-
-LOGGING_LEVEL = INFO
+Nota: el cliente ahora está en python, así que para configurarlo hay que modificar el archivo config.ini en la carpeta del cliente.  
 
 Para verificar que ambos programas finalizan de forma _graceful_:  
 Traerse la rama ej.4 y ejecutar:
@@ -134,12 +84,14 @@ Hay tres tipos de procesos:
 2. El aceptador, que se encarga de aceptar nuevos sockets y pasarselo al proceso principal a través de una cola. Solo hay uno.
 3. El manejador de cliente, que se encarga de hacer las peticiones del cliente. Hay uno por socket inicializado, es decir, uno por cliente, en este caso cinco. Una vez terminado, el manejador le avisa al proceso principal a través de una cola que su proceso terminó.
 
-Hay dos monitores que cada manejador de cliente va a tener acceso. El primero es el mapa de clientes finalizados: cuando un manejador termina con su cliente, accede al mapa y coloca que su proceso ya acabó. Como varios procesos pueden estar consultando esa información (para, por ejemplo, saber que se le puede regresar al cliente los ganadores del sorteo) al mismo tiempo, es necesario que esté protegida con un lock.
+Para sincronizar que todos los manejadores de cliente esperen a que todos sus compañeros hayan terminado se utiliza una barrera. Cuando el cliente le pida a su manejador que le pase la lista de ganadores, va y espera en la barrera. Cuando todos los procesos estén esperando en la misma, significa que ya todos terminaron y ya se puede regresar la información acordemente. La barrera espera cinco clientes y no es configurable, al menos en primera instancia, ya que el enunciado deja claro que solo son cinco agencias. 
 
-El otro monitor es el de la base de datos. Para escribir en la misma hay que tomar un lock. Como para el momento en el que las agencias cargan los ganadores de la base de datos ya no hay ninguna escribiendo información, no es necesario usar el lock.
+Además, Hay un monitor al que todos los manejadores de cliente van a tener acceso, el de la base de datos. Para escribir en la misma hay que tomar un lock. Como para el momento en el que las agencias cargan los ganadores de la base de datos ya no hay ninguna escribiendo información, no es necesario usar el lock.
 
 ##### Protocolo
 Dado el nuevo modelo, el protocolo cambió mínimamente para acomodar el modelo. Como una vez aceptado un socket se crea un nuevo proceso que va a almacenar el mismo, no es necesario que el cliente se vuelva a conectar cada vez que quiere enviar un paquete. Por lo tanto, el cliente al conectarse va a enviar su número de agencia, y ya no es necesario volverlo a enviar para el resto de los mensajes.
+
+También el cliente ya no se hace pooling para obtener los ganadores. Ahora, el cliente le pide al servidor que mande los ganadores, y el servidor lo va a mandar eventualmente (dependiendo de cuándo terminen las otras agencias).
 
 ##### Falencias del sistema
 Si el sistema (clientes + proceso de los servidores) termina de forma natural, se liberan todos los recursos acordemente. Sin embargo, por falta de tiempo el sistema no aguanta sigterms ni en el cliente ni en el servidor. 
